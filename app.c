@@ -154,7 +154,52 @@ char* date_with_most_sales(int *size, struct order *orders) {
         }
     }
     char *result = (char*)malloc(100 * sizeof(char));
-    sprintf(result, "Fecha con más ventas en terminos de dinero: %s (Dinero: %f)", date_most_sales, max_sales);
+    sprintf(result, "Fecha con más ventas en terminos de dinero: %s (Dinero: %.2f)", date_most_sales, max_sales);
+
+    return result;
+}
+
+char* date_with_least_sales(int size, struct order* orders) {
+    // Create a map to store the total sales for each date
+    struct {
+        char order_date[10];
+        float total_sales;
+    } date_sales[1000]; // Assuming there are at most 1000 different dates
+
+    int date_count = 0;
+
+    // Iterate over the orders
+    for (int i = 0; i < size; i++) {
+        // Check if the date is already in the map
+        int found = 0;
+        for (int j = 0; j < date_count; j++) {
+            if (strcmp(date_sales[j].order_date, orders[i].order_date) == 0) {
+                // If the date is already in the map, increment its total sales
+                date_sales[j].total_sales += orders[i].total_price;
+                found = 1;
+                break;
+            }
+        }
+
+        // If the date is not in the map, add it
+        if (!found) {
+            strcpy(date_sales[date_count].order_date, orders[i].order_date);
+            date_sales[date_count].total_sales = orders[i].total_price;
+            date_count++;
+        }
+    }
+
+    // Find the date with the least total sales
+    float min_sales = 1000000.0f;
+    char* date_least_sales = NULL;
+    for (int i = 0; i < date_count; i++) {
+        if (date_sales[i].total_sales < min_sales) {
+            min_sales = date_sales[i].total_sales;
+            date_least_sales = date_sales[i].order_date;
+        }
+    }
+    char* result = (char*)malloc(100 * sizeof(char));
+    sprintf(result, "Fecha con menos ventas en terminos de dinero: %s (Dinero: %.2f)", date_least_sales, min_sales);
 
     return result;
 }
@@ -327,16 +372,19 @@ int main(int argc, char *argv[]) {
         } else if (strcmp(argv[j], "pls") == 0) {
             result = least_sold_pizza(&i, orders);
             printf("Pizza menos vendida: %s\n", result);
-        } else if (strcmp(argv[j], "dmsp") == 0) {
-            result = date_most_sold_pizzas(&i, orders);
-            printf("%s\n", result);
-            free(result); // Liberar la memoria asignada dinámicamente
-        } else if (strcmp(argv[j], "dlsp") == 0) {
-            result = date_least_sales(&i, orders);
-            printf("Fecha con la menor venta: %s\n", result);
         } else if (strcmp(argv[j], "dms") == 0) {
             result = date_with_most_sales(&i, orders);
             printf("%s\n", result);
+        } else if (strcmp(argv[j], "dls") == 0) {
+            result = date_with_least_sales(i, orders);
+            printf("%s\n", result);
+        } else if (strcmp(argv[j], "dmsp") == 0) {
+            result = date_most_sold_pizzas(&i, orders);
+            printf("%s\n", result);
+            free(result);
+        } else if (strcmp(argv[j], "dlsp") == 0) {
+            result = date_least_sales(&i, orders);
+            printf("Fecha con la menor venta: %s\n", result); 
         } else {
             printf("Invalid metric: %s\n", argv[j]);
             return 1;
