@@ -153,7 +153,7 @@ char* date_with_most_sales(int *size, struct order *orders) {
             date_most_sales = date_sales[i].order_date;
         }
     }
-    char *result = (char*)malloc(50 * sizeof(char));
+    char *result = (char*)malloc(100 * sizeof(char));
     sprintf(result, "Fecha con más ventas en terminos de dinero: %s (Dinero: %f)", date_most_sales, max_sales);
 
     return result;
@@ -200,13 +200,8 @@ char* date_most_sold_pizzas(int *size, struct order *orders) {
     }
 
     // Crear una cadena para almacenar el resultado
-    char *result = (char*)malloc(50 * sizeof(char));
-    if (result != NULL) { // Verificar si la asignación de memoria fue exitosa
-        sprintf(result, "Fecha con más ventas de pizzas: %s (Cantidad de pizzas: %d)", date_most_sold, max_pizzas);
-    } else {
-        // Manejar error de asignación de memoria
-        result = "Error: No se pudo asignar memoria para el resultado.";
-    }
+    char *result = (char*)malloc(100 * sizeof(char));
+    sprintf(result, "Fecha con más ventas de pizzas: %s (Cantidad de pizzas: %d)", date_most_sold, max_pizzas);
 
     return result;
 }
