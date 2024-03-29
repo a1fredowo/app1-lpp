@@ -21,97 +21,98 @@ struct order {
 // Define the function pointer for the metrics
 typedef char* (*metric)(int *size, struct order *orders);
 
-// Define the functions for each metric
-char* most_sold_pizza(int *size, struct order *orders) {
-    // Create a map to store the quantity of each pizza sold
+char* most_sold_pizza(int size, struct order* orders) {
+    // Create a map to store the total quantity sold for each pizza name ID
     struct {
         char pizza_name_id[50];
-        char pizza_name[50];
-        float quantity;
-    } pizza_quantities[1000]; // Assuming there are at most 1000 different pizzas
+        float total_quantity;
+    } pizza_sales[1000]; // Assuming there are at most 1000 different pizzas
 
     int pizza_count = 0;
 
-    // Iterate over the orders
-    for (int i = 0; i < *size; i++) {
-        // Check if the pizza is already in the map
+    // Iterate over the orders to calculate the total quantity sold for each pizza
+    for (int i = 0; i < size; i++) {
+        // Check if the pizza name ID is already in the map
         int found = 0;
         for (int j = 0; j < pizza_count; j++) {
-            if (strcmp(pizza_quantities[j].pizza_name_id, orders[i].pizza_name_id) == 0 &&
-                strcmp(pizza_quantities[j].pizza_name, orders[i].pizza_name) == 0) {
-                // If the pizza is already in the map, increment its quantity
-                pizza_quantities[j].quantity += orders[i].quantity;
+            if (strcmp(pizza_sales[j].pizza_name_id, orders[i].pizza_name_id) == 0) {
+                // If the pizza name ID is already in the map, add the quantity sold
+                pizza_sales[j].total_quantity += orders[i].quantity;
                 found = 1;
                 break;
             }
         }
 
-        // If the pizza is not in the map, add it
+        // If the pizza name ID is not in the map, add it
         if (!found) {
-            strcpy(pizza_quantities[pizza_count].pizza_name_id, orders[i].pizza_name_id);
-            strcpy(pizza_quantities[pizza_count].pizza_name, orders[i].pizza_name);
-            pizza_quantities[pizza_count].quantity = orders[i].quantity;
+            strcpy(pizza_sales[pizza_count].pizza_name_id, orders[i].pizza_name_id);
+            pizza_sales[pizza_count].total_quantity = orders[i].quantity;
             pizza_count++;
         }
     }
 
-    // Find the pizza with the highest quantity
-    int max_quantity = 0;
-    char *most_sold_pizza = NULL;
+    // Find the pizza with the highest quantity sold
+    float max_quantity = 0;
+    char* most_sold_pizza_name_id = NULL;
     for (int i = 0; i < pizza_count; i++) {
-        if (pizza_quantities[i].quantity > max_quantity) {
-            max_quantity = pizza_quantities[i].quantity;
-            most_sold_pizza = pizza_quantities[i].pizza_name;
+        if (pizza_sales[i].total_quantity > max_quantity) {
+            max_quantity = pizza_sales[i].total_quantity;
+            most_sold_pizza_name_id = pizza_sales[i].pizza_name_id;
         }
     }
 
-    return most_sold_pizza;
+    // Create a string to store the result
+    char* result = (char*)malloc(100 * sizeof(char));
+    sprintf(result, "Pizza más vendida: %s (Cantidad vendida: %.2f)", most_sold_pizza_name_id, max_quantity);
+
+    return result;
 }
 
-char* least_sold_pizza(int *size, struct order *orders) {
-    // Create a map to store the quantity of each pizza sold
+char* least_sold_pizza(int size, struct order* orders) {
+    // Create a map to store the total quantity sold for each pizza name ID
     struct {
         char pizza_name_id[50];
-        char pizza_name[50];
-        float quantity;
-    } pizza_quantities[1000]; // Assuming there are at most 1000 different pizzas
+        float total_quantity;
+    } pizza_sales[1000]; // Assuming there are at most 1000 different pizzas
 
     int pizza_count = 0;
 
-    // Iterate over the orders
-    for (int i = 0; i < *size; i++) {
-        // Check if the pizza is already in the map
+    // Iterate over the orders to calculate the total quantity sold for each pizza
+    for (int i = 0; i < size; i++) {
+        // Check if the pizza name ID is already in the map
         int found = 0;
         for (int j = 0; j < pizza_count; j++) {
-            if (strcmp(pizza_quantities[j].pizza_name_id, orders[i].pizza_name_id) == 0 &&
-                strcmp(pizza_quantities[j].pizza_name, orders[i].pizza_name) == 0) {
-                // If the pizza is already in the map, increment its quantity
-                pizza_quantities[j].quantity += orders[i].quantity;
+            if (strcmp(pizza_sales[j].pizza_name_id, orders[i].pizza_name_id) == 0) {
+                // If the pizza name ID is already in the map, add the quantity sold
+                pizza_sales[j].total_quantity += orders[i].quantity;
                 found = 1;
                 break;
             }
         }
 
-        // If the pizza is not in the map, add it
+        // If the pizza name ID is not in the map, add it
         if (!found) {
-            strcpy(pizza_quantities[pizza_count].pizza_name_id, orders[i].pizza_name_id);
-            strcpy(pizza_quantities[pizza_count].pizza_name, orders[i].pizza_name);
-            pizza_quantities[pizza_count].quantity = orders[i].quantity;
+            strcpy(pizza_sales[pizza_count].pizza_name_id, orders[i].pizza_name_id);
+            pizza_sales[pizza_count].total_quantity = orders[i].quantity;
             pizza_count++;
         }
     }
 
-    // Find the pizza with the lowest quantity
-    int min_quantity = pizza_quantities[0].quantity;
-    char *least_sold_pizza = pizza_quantities[0].pizza_name;
+    // Find the pizza with the lowest quantity sold
+    float min_quantity = pizza_sales[0].total_quantity;
+    char* least_sold_pizza_name_id = pizza_sales[0].pizza_name_id;
     for (int i = 1; i < pizza_count; i++) {
-        if (pizza_quantities[i].quantity < min_quantity) {
-            min_quantity = pizza_quantities[i].quantity;
-            least_sold_pizza = pizza_quantities[i].pizza_name;
+        if (pizza_sales[i].total_quantity < min_quantity) {
+            min_quantity = pizza_sales[i].total_quantity;
+            least_sold_pizza_name_id = pizza_sales[i].pizza_name_id;
         }
     }
 
-    return least_sold_pizza;
+    // Create a string to store the result
+    char* result = (char*)malloc(100 * sizeof(char));
+    sprintf(result, "Pizza menos vendida: %s (Cantidad vendida: %.2f)", least_sold_pizza_name_id, min_quantity);
+
+    return result;
 }
 
 char* date_with_most_sales(int *size, struct order *orders) {
@@ -367,11 +368,11 @@ int main(int argc, char *argv[]) {
     for (int j = 2; j < argc; j++) {
         char* result;
         if (strcmp(argv[j], "pms") == 0) {
-            result = most_sold_pizza(&i, orders);
-            printf("Pizza mas vendida: %s\n", result);
+            result = most_sold_pizza(i, orders);
+            printf("%s\n", result);
         } else if (strcmp(argv[j], "pls") == 0) {
-            result = least_sold_pizza(&i, orders);
-            printf("Pizza menos vendida: %s\n", result);
+            result = least_sold_pizza(i, orders);
+            printf("%s\n", result);
         } else if (strcmp(argv[j], "dms") == 0) {
             result = date_with_most_sales(&i, orders);
             printf("%s\n", result);
