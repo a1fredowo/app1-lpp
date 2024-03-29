@@ -28,7 +28,7 @@ char* most_sold_pizza(int *size, struct order *orders) {
         char pizza_name_id[50];
         char pizza_name[50];
         float quantity;
-    } pizza_quantities[1000]; // Assuming there are at most 5000 different pizzas
+    } pizza_quantities[1000]; // Assuming there are at most 1000 different pizzas
 
     int pizza_count = 0;
 
@@ -74,7 +74,7 @@ char* least_sold_pizza(int *size, struct order *orders) {
         char pizza_name_id[50];
         char pizza_name[50];
         float quantity;
-    } pizza_quantities[1000]; // Assuming there are at most 5000 different pizzas
+    } pizza_quantities[1000]; // Assuming there are at most 1000 different pizzas
 
     int pizza_count = 0;
 
@@ -112,6 +112,47 @@ char* least_sold_pizza(int *size, struct order *orders) {
     }
 
     return least_sold_pizza;
+}
+
+char* date_least_sales(int *size, struct order *orders) {
+    struct date_sales {
+        char date[10];
+        int sales;
+    };
+
+    struct date_sales date_sales[1000];
+    int date_count = 0;
+
+    for (int i = 0; i < *size; i++) {
+        int found = 0;
+        for (int j = 0; j < date_count; j++) {
+            if (strcmp(date_sales[j].date, orders[i].order_date) == 0) {
+                date_sales[j].sales += orders[i].quantity;
+                found = 1;
+                break;
+            }
+        }
+
+        if (!found) {
+            strcpy(date_sales[date_count].date, orders[i].order_date);
+            date_sales[date_count].sales = orders[i].quantity;
+            date_count++;
+        }
+    }
+
+    int min_sales = date_sales[0].sales;
+    char* min_date = date_sales[0].date;
+
+    for (int i = 1; i < date_count; i++) {
+        if (date_sales[i].sales < min_sales) {
+            min_sales = date_sales[i].sales;
+            min_date = date_sales[i].date;
+        }
+    }
+
+    char* result = malloc(100 * sizeof(char));
+    sprintf(result, "Fecha: %s, Cantidad de pizzas: %d", min_date, min_sales);
+    return result;
 }
 
 // ... Repeat for each metric
@@ -194,6 +235,9 @@ int main(int argc, char *argv[]) {
         } else if (strcmp(argv[j], "pls") == 0) {
             result = least_sold_pizza(&i, orders);
             printf("Pizza menos vendida: %s\n", result);
+        } else if (strcmp(argv[j], "dlsp") == 0) {
+            result = date_least_sales(&i, orders);
+            printf("Fecha con la menor venta: %s\n", result);
         } else {
             printf("Invalid metric: %s\n", argv[j]);
             return 1;
