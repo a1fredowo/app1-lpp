@@ -17,10 +17,10 @@ struct order {
     char pizza_name[50];
 };
 
-// Define the function pointer for the metrics
+// se define la función de tipo de puntero a función para las métricas
 typedef char* (*metric)(int *size, struct order *orders);
 
-// Define the metric functions
+// se definen las metricas
 char* pizzas_mas_vendidas(int *size, struct order *orders);
 char* pizzas_menos_vendidas(int *size, struct order *orders);
 char* fecha_con_mas_ventas(int *size, struct order *orders);
@@ -34,29 +34,27 @@ char* pizzas_por_categoria_vendidas(int *size, struct order *orders);
 
 
 int main(int argc, char *argv[]) {
-    // Check if the correct number of arguments are provided
     if (argc < 3) {
         printf("Usage: %s <csv file> <metric1> <metric2> ...\n", argv[0]);
         return 1;
     }
 
-    // TODO: Read the CSV file and store the data in an array of order structs
     FILE *file = fopen(argv[1], "r");
     if (file == NULL) {
         printf("Could not open file %s\n", argv[1]);
         return 1;
     }
 
-    struct order orders[1000]; // Assuming there are at most 1000 orders
+    struct order orders[1000]; // asumiendo que hay como máximo 1000 órdenes
     char line[256];
     int i = 0;
 
-    // Skip the header line
+    // skipear la primera línea
     fgets(line, sizeof(line), file);
 
     while (fgets(line, sizeof(line), file)) {
         char *token;
-
+        // se crean los tokens para separar los datos del archivo csv y asi poder almacenarlos en el struct
         token = strtok(line, ",");
         orders[i].pizza_id = atoi(token);
 
@@ -93,7 +91,7 @@ int main(int argc, char *argv[]) {
         token = strtok(NULL, ",");
         strcpy(orders[i].pizza_name, token);
 
-        // Remove the newline character from pizza_name
+        // se elimina el salto de línea al final del nombre de la pizza
         size_t len = strlen(orders[i].pizza_name);
         if (orders[i].pizza_name[len - 1] == '\n') {
             orders[i].pizza_name[len - 1] = '\0';
@@ -103,21 +101,21 @@ int main(int argc, char *argv[]) {
     
     fclose(file);
 
-    // Definir un arreglo de punteros a funciones
+    // se define un arreglo de punteros a funciones para las métricas
     metric metrics[] = {pizzas_mas_vendidas, pizzas_menos_vendidas, fecha_con_mas_ventas, 
                         fecha_con_menos_ventas, fecha_pizzas_mas_vendidas, fecha_pizzas_menos_ventas, 
                         promedio_pizzas_por_orden, promedio_pizzas_por_dia, 
                         ingrediente_mas_vendido, pizzas_por_categoria_vendidas};
 
-    // Obtener el número de métricas
+    // se obtiene el número de métricas
     int num_metrics = sizeof(metrics) / sizeof(metrics[0]);
 
-    // Definir los nombres de las métricas
+    // se definen los nombres de las métricas
     const char* metric_names[] = {"pms", "pls", "dms", "dls", "dmsp", "dlsp", "apo", "apd", "ims", "hp"};
 
-    // Iterar sobre las métricas proporcionadas como argumentos de la línea de comandos
+    // se itera sobre las métricas proporcionadas como argumentos de la línea de comandos
     for (int j = 2; j < argc; j++) {
-        // Buscar la métrica en el arreglo de nombres de métricas
+        // busca la métrica en el arreglo de nombres de métricas
         int metric_index = -1;
         for (int k = 0; k < num_metrics; k++) {
             if (strcmp(argv[j], metric_names[k]) == 0) {
@@ -126,14 +124,13 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        // Verificar si se encontró la métrica
+        // verifica si se encontró la métrica y la llama
         if (metric_index != -1) {
-            // Llamar a la función de métrica correspondiente
             char* result = metrics[metric_index](&i, orders);
             printf("%s\n", result);
-            free(result); // Liberar la memoria asignada dinámicamente
+            free(result);
         } else {
-            printf("Invalid metric: %s\n", argv[j]);
+            printf("Metrica invalida: %s\n", argv[j]);
             return 1;
         }
     }
@@ -233,17 +230,17 @@ char* pizzas_menos_vendidas(int *size, struct order *orders) {
 }
 
 char* fecha_con_mas_ventas(int *size, struct order *orders) {
-    // Create a map to store the total sales for each date
+    // crea un mapa para almacenar las ventas totales para cada fecha
     struct {
         char order_date[10];
         float total_sales;
-    } date_sales[1000]; // Assuming there are at most 1000 different dates
+    } date_sales[1000]; // asumiendo que hay como máximo 1000 fechas diferentes
 
     int date_count = 0;
 
-    // Iterate over the orders
+    // itera sobre las órdenes
     for (int i = 0; i < *size; i++) {
-        // Check if the date is already in the map
+        // chequea si la fecha ya está en el mapa
         int found = 0;
         for (int j = 0; j < date_count; j++) {
             if (strcmp(date_sales[j].order_date, orders[i].order_date) == 0) {
@@ -254,7 +251,7 @@ char* fecha_con_mas_ventas(int *size, struct order *orders) {
             }
         }
 
-        // If the date is not in the map, add it
+        // si la fecha no está en el mapa, se agrega
         if (!found) {
             strcpy(date_sales[date_count].order_date, orders[i].order_date);
             date_sales[date_count].total_sales = orders[i].total_price;
@@ -262,7 +259,7 @@ char* fecha_con_mas_ventas(int *size, struct order *orders) {
         }
     }
 
-    // Find the date with the highest total sales
+    // encuentra la fecha con más ventas
     float max_sales = 0;
     char *date_most_sales = NULL;
     for (int i = 0; i < date_count; i++) {
