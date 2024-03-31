@@ -22,16 +22,17 @@ struct order {
 typedef char* (*metric)(int *size, struct order *orders);
 
 // Define the metric functions
-char* most_sold_pizza(int size, struct order* orders);
-char* least_sold_pizza(int size, struct order* orders);
-char* date_with_most_sales(int *size, struct order *orders);
-char* date_with_least_sales(int size, struct order* orders);
-char* date_most_sold_pizzas(int *size, struct order *orders);
-char* date_least_sales(int *size, struct order *orders);
-char* average_pizzas_per_order(int size, struct order *orders);
-char* average_pizzas_per_day(int size, struct order *orders);
-char* ingredient_most_sold(int *size, struct order *orders);
-char* pizzas_per_category_sold(int size, struct order* orders);
+char* pizzas_mas_vendidas(int *size, struct order *orders);
+char* pizzas_menos_vendidas(int *size, struct order *orders);
+char* fecha_con_mas_ventas(int *size, struct order *orders);
+char* fecha_con_menos_ventas(int *size, struct order *orders);
+char* fecha_pizzas_mas_vendidas(int *size, struct order *orders);
+char* fecha_pizzas_menos_ventas(int *size, struct order *orders);
+char* promedio_pizzas_por_orden(int *size, struct order *orders);
+char* promedio_pizzas_por_dia(int *size, struct order *orders);
+char* ingrediente_mas_vendido(int *size, struct order *orders);
+char* pizzas_por_categoria_vendidas(int *size, struct order *orders);
+
 
 int main(int argc, char *argv[]) {
     // Check if the correct number of arguments are provided
@@ -96,46 +97,42 @@ int main(int argc, char *argv[]) {
         // Remove the newline character from pizza_name
         size_t len = strlen(orders[i].pizza_name);
         if (orders[i].pizza_name[len - 1] == '\n') {
-        orders[i].pizza_name[len - 1] = '\0';
-    }
+            orders[i].pizza_name[len - 1] = '\0';
+        }
         i++;
     }
     
     fclose(file);
 
+    // Definir un arreglo de punteros a funciones
+metric metrics[] = {pizzas_mas_vendidas, pizzas_menos_vendidas, fecha_con_mas_ventas, 
+                    fecha_con_menos_ventas, fecha_pizzas_mas_vendidas, fecha_pizzas_menos_ventas, 
+                    promedio_pizzas_por_orden, promedio_pizzas_por_dia, 
+                    ingrediente_mas_vendido, pizzas_por_categoria_vendidas};
+
+    // Obtener el número de métricas
+    int num_metrics = sizeof(metrics) / sizeof(metrics[0]);
+
+    // Definir los nombres de las métricas
+    const char* metric_names[] = {"pms", "pls", "dms", "dls", "dmsp", "dlsp", "apo", "apd", "ims", "hp"};
+
+    // Iterar sobre las métricas proporcionadas como argumentos de la línea de comandos
     for (int j = 2; j < argc; j++) {
-        char* result;
-        if (strcmp(argv[j], "pms") == 0) {
-            result = most_sold_pizza(i, orders);
+        // Buscar la métrica en el arreglo de nombres de métricas
+        int metric_index = -1;
+        for (int k = 0; k < num_metrics; k++) {
+            if (strcmp(argv[j], metric_names[k]) == 0) {
+                metric_index = k;
+                break;
+            }
+        }
+
+        // Verificar si se encontró la métrica
+        if (metric_index != -1) {
+            // Llamar a la función de métrica correspondiente
+            char* result = metrics[metric_index](&i, orders);
             printf("%s\n", result);
-        } else if (strcmp(argv[j], "pls") == 0) {
-            result = least_sold_pizza(i, orders);
-            printf("%s\n", result);
-        } else if (strcmp(argv[j], "dms") == 0) {
-            result = date_with_most_sales(&i, orders);
-            printf("%s\n", result);
-        } else if (strcmp(argv[j], "dls") == 0) {
-            result = date_with_least_sales(i, orders);
-            printf("%s\n", result);
-        } else if (strcmp(argv[j], "dmsp") == 0) {
-            result = date_most_sold_pizzas(&i, orders);
-            printf("%s\n", result);
-            free(result);
-        } else if (strcmp(argv[j], "dlsp") == 0) {
-            result = date_least_sales(&i, orders);
-            printf("Fecha con la menor venta: %s\n", result);
-        } else if (strcmp(argv[j], "apo") == 0) {
-            result = average_pizzas_per_order(i, orders);
-            printf("%s\n", result);
-        } else if (strcmp(argv[j], "apd") == 0) {
-            result = average_pizzas_per_day(i, orders);
-            printf("%s\n", result);
-        } else if (strcmp(argv[j], "ims") == 0) {
-            result = ingredient_most_sold(&i, orders);
-            printf("%s\n", result);
-        } else if (strcmp(argv[j], "hp") == 0) {
-            result = pizzas_per_category_sold(i, orders);
-            printf("%s\n", result);
+            free(result); // Liberar la memoria asignada dinámicamente
         } else {
             printf("Invalid metric: %s\n", argv[j]);
             return 1;
@@ -144,7 +141,7 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-char* most_sold_pizza(int size, struct order* orders) {
+char* pizzas_mas_vendidas(int *size, struct order *orders) {
     // Create a map to store the total quantity sold for each pizza name ID
     struct {
         char pizza_name_id[50];
@@ -154,7 +151,7 @@ char* most_sold_pizza(int size, struct order* orders) {
     int pizza_count = 0;
 
     // Iterate over the orders to calculate the total quantity sold for each pizza
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < *size; i++) {
         // Check if the pizza name ID is already in the map
         int found = 0;
         for (int j = 0; j < pizza_count; j++) {
@@ -187,11 +184,10 @@ char* most_sold_pizza(int size, struct order* orders) {
     // Create a string to store the result
     char* result = (char*)malloc(100 * sizeof(char));
     sprintf(result, "Pizza más vendida: %s (Cantidad vendida: %.2f)", most_sold_pizza_name_id, max_quantity);
-
     return result;
 }
 
-char* least_sold_pizza(int size, struct order* orders) {
+char* pizzas_menos_vendidas(int *size, struct order *orders) {
     // Create a map to store the total quantity sold for each pizza name ID
     struct {
         char pizza_name_id[50];
@@ -201,7 +197,7 @@ char* least_sold_pizza(int size, struct order* orders) {
     int pizza_count = 0;
 
     // Iterate over the orders to calculate the total quantity sold for each pizza
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < *size; i++) {
         // Check if the pizza name ID is already in the map
         int found = 0;
         for (int j = 0; j < pizza_count; j++) {
@@ -234,11 +230,11 @@ char* least_sold_pizza(int size, struct order* orders) {
     // Create a string to store the result
     char* result = (char*)malloc(100 * sizeof(char));
     sprintf(result, "Pizza menos vendida: %s (Cantidad vendida: %.2f)", least_sold_pizza_name_id, min_quantity);
-
     return result;
 }
 
-char* date_with_most_sales(int *size, struct order *orders) {
+
+char* fecha_con_mas_ventas(int *size, struct order *orders) {
     // Create a map to store the total sales for each date
     struct {
         char order_date[10];
@@ -279,11 +275,10 @@ char* date_with_most_sales(int *size, struct order *orders) {
     }
     char *result = (char*)malloc(100 * sizeof(char));
     sprintf(result, "Fecha con más ventas en terminos de dinero: %s (Dinero: %.2f)", date_most_sales, max_sales);
-
     return result;
 }
 
-char* date_with_least_sales(int size, struct order* orders) {
+char* fecha_con_menos_ventas(int *size, struct order *orders) {
     // Create a map to store the total sales for each date
     struct {
         char order_date[10];
@@ -293,7 +288,7 @@ char* date_with_least_sales(int size, struct order* orders) {
     int date_count = 0;
 
     // Iterate over the orders
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < *size; i++) {
         // Check if the date is already in the map
         int found = 0;
         for (int j = 0; j < date_count; j++) {
@@ -324,11 +319,11 @@ char* date_with_least_sales(int size, struct order* orders) {
     }
     char* result = (char*)malloc(100 * sizeof(char));
     sprintf(result, "Fecha con menos ventas en terminos de dinero: %s (Dinero: %.2f)", date_least_sales, min_sales);
-
     return result;
 }
 
-char* date_most_sold_pizzas(int *size, struct order *orders) {
+
+char* fecha_pizzas_mas_vendidas(int *size, struct order *orders) {
     // Crear un mapa para almacenar la cantidad de pizzas vendidas en cada fecha
     struct {
         char order_date[10];
@@ -371,11 +366,10 @@ char* date_most_sold_pizzas(int *size, struct order *orders) {
     // Crear una cadena para almacenar el resultado
     char *result = (char*)malloc(100 * sizeof(char));
     sprintf(result, "Fecha con más ventas de pizzas: %s (Cantidad de pizzas: %d)", date_most_sold, max_pizzas);
-
     return result;
 }
 
-char* date_least_sales(int *size, struct order *orders) {
+char* fecha_pizzas_menos_ventas(int *size, struct order *orders) {
     struct date_sales {
         char date[10];
         int sales;
@@ -416,7 +410,7 @@ char* date_least_sales(int *size, struct order *orders) {
     return result;
 }
 
-char* average_pizzas_per_order(int size, struct order *orders) {
+char* promedio_pizzas_por_orden(int *size, struct order *orders) {
     int total_orders = 0;
     float total_pizzas = 0;
 
@@ -426,7 +420,7 @@ char* average_pizzas_per_order(int size, struct order *orders) {
         int order_count = 0;
 
         // Calcular la cantidad total de pizzas para la orden actual
-        for (int j = 0; j < size; j++) {
+        for (int j = 0; j < *size; j++) {
             if (orders[j].order_id == i) {
                 order_pizzas += orders[j].quantity;
                 order_count++;
@@ -446,11 +440,10 @@ char* average_pizzas_per_order(int size, struct order *orders) {
     // Crear una cadena para almacenar el resultado
     char* result = (char*)malloc(100 * sizeof(char)); // Puedes ajustar el tamaño según sea necesario
     snprintf(result, 100, "Promedio de pizzas por orden: %.2f", global_average);
-
     return result;
 }
 
-char* average_pizzas_per_day(int size, struct order *orders) {
+char* promedio_pizzas_por_dia(int *size, struct order *orders) {
     struct {
         char order_date[10];
         int total_pizzas;
@@ -466,7 +459,7 @@ char* average_pizzas_per_day(int size, struct order *orders) {
     }
 
     // Iterar sobre las órdenes para calcular el total de pizzas y el contador para cada fecha
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < *size; i++) {
         int found = 0;
         for (int j = 0; j < date_count; j++) {
             if (strcmp(date_pizza_sales[j].order_date, orders[i].order_date) == 0) {
@@ -503,7 +496,7 @@ char* average_pizzas_per_day(int size, struct order *orders) {
     return result;
 }
 
-char* ingredient_most_sold(int *size, struct order *orders) {
+char* ingrediente_mas_vendido(int *size, struct order *orders) {
     // Create a map to store the quantity of each ingredient sold
     struct {
         char ingredient_name[50];
@@ -562,11 +555,10 @@ char* ingredient_most_sold(int *size, struct order *orders) {
     // Create a string to store the result
     char* result = (char*)malloc(100 * sizeof(char));
     sprintf(result, "Ingrediente más vendido: %s", most_sold_ingredient);
-
     return result;
 }
 
-char* pizzas_per_category_sold(int size, struct order* orders) {
+char* pizzas_por_categoria_vendidas(int *size, struct order *orders) {
     // Crear un mapa para almacenar la cantidad de pizzas vendidas en cada categoría
     struct {
         char category_name[50];
@@ -576,7 +568,7 @@ char* pizzas_per_category_sold(int size, struct order* orders) {
     int category_count = 0;
 
     // Iterar sobre las órdenes para calcular la cantidad de pizzas vendidas en cada categoría
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < *size; i++) {
         // Comprobar si la categoría ya está en el mapa
         int found = 0;
         for (int j = 0; j < category_count; j++) {
@@ -602,6 +594,5 @@ char* pizzas_per_category_sold(int size, struct order* orders) {
     for (int i = 0; i < category_count; i++) {
         sprintf(result + strlen(result), "%s: %d\n", category_sales[i].category_name, category_sales[i].total_pizzas);
     }
-
     return result;
 }
