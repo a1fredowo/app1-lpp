@@ -35,27 +35,27 @@ char* pizzas_por_categoria_vendidas(int *size, struct order *orders);
 
 int main(int argc, char *argv[]) {
     if (argc < 3) {
-        printf("Usage: %s <csv file> <metric1> <metric2> ...\n", argv[0]);
+        printf("Error, escriba los archivos como: %s <archivo csv> <metrica1> <metrica2> ...\n", argv[0]);
         return 1;
     }
 
-    FILE *file = fopen(argv[1], "r");
-    if (file == NULL) {
-        printf("Could not open file %s\n", argv[1]);
+    FILE *archivo = fopen(argv[1], "r");
+    if (archivo == NULL) {
+        printf("No se pudo abrir el archivo %s\n", argv[1]);
         return 1;
     }
 
     struct order orders[1000]; // asumiendo que hay como máximo 1000 órdenes
-    char line[256];
+    char linea[256];
     int i = 0;
 
     // skipear la primera línea
-    fgets(line, sizeof(line), file);
+    fgets(linea, sizeof(linea), archivo);
 
-    while (fgets(line, sizeof(line), file)) {
+    while (fgets(linea, sizeof(linea), archivo)) {
         char *token;
         // se crean los tokens para separar los datos del archivo csv y asi poder almacenarlos en el struct
-        token = strtok(line, ",");
+        token = strtok(linea, ",");
         orders[i].pizza_id = atoi(token);
 
         token = strtok(NULL, ",");
@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
         i++;
     }
     
-    fclose(file);
+    fclose(archivo);
 
     // se define un arreglo de punteros a funciones para las métricas
     metric metrics[] = {pizzas_mas_vendidas, pizzas_menos_vendidas, fecha_con_mas_ventas, 
@@ -108,25 +108,25 @@ int main(int argc, char *argv[]) {
                         ingrediente_mas_vendido, pizzas_por_categoria_vendidas};
 
     // se obtiene el número de métricas
-    int num_metrics = sizeof(metrics) / sizeof(metrics[0]);
+    int num_metricas = sizeof(metrics) / sizeof(metrics[0]);
 
     // se definen los nombres de las métricas
-    const char* metric_names[] = {"pms", "pls", "dms", "dls", "dmsp", "dlsp", "apo", "apd", "ims", "hp"};
+    const char* nom_metricas[] = {"pms", "pls", "dms", "dls", "dmsp", "dlsp", "apo", "apd", "ims", "hp"};
 
     // se itera sobre las métricas proporcionadas como argumentos de la línea de comandos
     for (int j = 2; j < argc; j++) {
         // busca la métrica en el arreglo de nombres de métricas
-        int metric_index = -1;
-        for (int k = 0; k < num_metrics; k++) {
-            if (strcmp(argv[j], metric_names[k]) == 0) {
-                metric_index = k;
+        int index_metrica = -1;
+        for (int k = 0; k < num_metricas; k++) {
+            if (strcmp(argv[j], nom_metricas[k]) == 0) {
+                index_metrica = k;
                 break;
             }
         }
 
         // verifica si se encontró la métrica y la llama
-        if (metric_index != -1) {
-            char* result = metrics[metric_index](&i, orders);
+        if (index_metrica != -1) {
+            char* result = metrics[index_metrica](&i, orders);
             printf("%s\n", result);
             free(result);
         } else {
